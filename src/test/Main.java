@@ -1,28 +1,38 @@
 package test;
+// This is a simple test program to demonstrate the use of the
+// DriveMath class for calculating mecanum wheel powers based
+// on user input for forward, strafe, and turn movements. The
+// program continuously prompts the user to enter values for
+// forward, strafe, and turn, and then calculates and displays
+// the corresponding power for each of the four mecanum wheels
+// (front left, front right, back left, back right) using the
+// DriveMath.mecanum method. The output is formatted to show
+// the power for each wheel with two decimal places for easy
+// reading. This allows users to see how different combinations
+// of forward, strafe, and turn inputs affect the wheel powers,
+// which is useful for understanding how to control a robot with
+// mecanum wheels effectively.
+import hardware.DriveMath;
+import input.InputProcessor;
+import java.util.Scanner;
 
-import control.PID;
 
 public class Main {
     public static void main(String[] args) {
-        // Create a PID controller with specific gains
-        PID pid = new PID(0.05, 0.001, 0.01);
+        InputProcessor processor = new InputProcessor(0.05, 3);
 
-        double target = 100.0; // The desired target value we want to reach
-        double current = 0.0; // The current value that will be updated based on the PID output
+        Scanner sc = new Scanner(System.in);
 
-        for (int step = 0; step < 50; step++) { // Simulate 50 time steps
-            double output = pid.update(target, current); // Update the PID controller with the target and current value to get the output
+        while (true) {
+            System.out.print("forward strafe turn: ");
+            double forward = sc.nextDouble();
+            double strafe  = sc.nextDouble();
+            double turn    = sc.nextDouble();
 
-            // Simulate the system response by updating
-            // the current value based on the PID output
-            current += output * 10.0;
+            double[] p = DriveMath.mecanum(forward, strafe, turn);
 
-            // Print the current step, target, current value, and PID output for debugging
-            System.out.println(
-                    "step=" + step +
-                            " current=" + current +
-                            " output=" + output
-            );
+            System.out.printf("FL=%.2f FR=%.2f BL=%.2f BR=%.2f%n",
+                    p[0], p[1], p[2], p[3]);
         }
     }
 }
