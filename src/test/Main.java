@@ -4,6 +4,7 @@ import control.TeleOpController;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 public class Main {
@@ -11,18 +12,26 @@ public class Main {
     private static volatile double x = 0.0;
     private static volatile double y = 0.0;
     private static volatile double rotation = 0.0;
+    private static volatile long lastInputTime = 0;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Keyboard Input Simulation");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(300, 200);
+            frame.setSize(400, 200);
+            frame.setLayout(null); // Use absolute layout for simplicity
+
+            JLabel label = new JLabel("FL: 0.000 FR: 0.000\nBL: 0.000 BR: 0.000");
+            label.setBounds(10, 10, 380, 100);
+            frame.add(label);
+
             frame.setVisible(true);
 
             frame.addKeyListener(new KeyListener() {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     int key = e.getKeyCode();
+                    lastInputTime = System.currentTimeMillis(); // Update last input time
                     switch (key) {
                         case KeyEvent.VK_W:
                             if (x < 1.0) {
@@ -59,21 +68,7 @@ public class Main {
 
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    int key = e.getKeyCode();
-                    switch (key) {
-                        case KeyEvent.VK_W:
-                        case KeyEvent.VK_S:
-                            y = 0.0;
-                            break;
-                        case KeyEvent.VK_A:
-                        case KeyEvent.VK_D:
-                            x = 0.0;
-                            break;
-                        case KeyEvent.VK_Q:
-                        case KeyEvent.VK_E:
-                            rotation = 0.0;
-                            break;
-                    }
+                    // No action needed, deceleration handled in update thread
                 }
 
                 @Override
@@ -82,14 +77,25 @@ public class Main {
                 }
             });
 
-            // Start a thread to continuously update and print powers
+            // Start a thread to continuously update the label
             Thread updateThread = new Thread(() -> {
                 while (true) {
+                    // Decelerate to center if no input for 1 second
+                    long now = System.currentTimeMillis();
+                    if (now - lastInputTime > 1000) {
+                        if (x > 0) x -= 0.01;
+                        else if (x < 0) x += 0.01;
+                        if (y > 0) y -= 0.01;
+                        else if (y < 0) y += 0.01;
+                        if (rotation > 0) rotation -= 0.01;
+                        else if (rotation < 0) rotation += 0.01;
+                    }
                     double[] powers = controller.update(x, y, rotation);
-                    System.out.print("\033[H"); // Move cursor to top left
-                    System.out.printf("FL: %.3f FR: %.3f\nBL: %.3f BR: %.3f\n", powers[0], powers[1], powers[2], powers[3]);
+                    SwingUtilities.invokeLater(() -> {
+                        label.setText(String.format("<html>FL: %.3f FR: %.3f<br>BL: %.3f BR: %.3f</html>", powers[0], powers[1], powers[2], powers[3]));
+                    });
                     try {
-                        Thread.sleep(500); // Update every 500ms
+                        Thread.sleep(10); // Update every 500ms
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         break;
