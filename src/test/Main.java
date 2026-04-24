@@ -12,7 +12,9 @@ public class Main {
     private static volatile double x = 0.0;
     private static volatile double y = 0.0;
     private static volatile double rotation = 0.0;
-    private static volatile long lastInputTime = 0;
+    private static volatile long lastXTime = 0;
+    private static volatile long lastYTime = 0;
+    private static volatile long lastRotationTime = 0;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -31,37 +33,43 @@ public class Main {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     int key = e.getKeyCode();
-                    lastInputTime = System.currentTimeMillis(); // Update last input time
+                    long now = System.currentTimeMillis();
                     switch (key) {
                         case KeyEvent.VK_W:
                             if (x < 1.0) {
                                 x += 0.05;
                             } // 前进加速
+                            lastXTime = now;
                             break;
                         case KeyEvent.VK_S:
                             if (x > -1.0) {
                                 x -= 0.05;
                             } // 后退加速
+                            lastXTime = now;
                             break;
                         case KeyEvent.VK_A:
                             if (y > -1.0) {
                                 y -= 0.05;
                             } // 左移加速
+                            lastYTime = now;
                             break;
                         case KeyEvent.VK_D:
                             if (y < 1.0) {
                                 y += 0.05;
                             } // 右移加速
+                            lastYTime = now;
                             break;
                         case KeyEvent.VK_Q:
                             if (rotation > -1.0) {
                                 rotation -= 0.05;
                             } // 左转加速
+                            lastRotationTime = now;
                             break;
                         case KeyEvent.VK_E:
                             if (rotation < 1.0) {
                                 rotation += 0.05;
                             } // 右转加速
+                            lastRotationTime = now;
                             break;
                     }
                 }
@@ -82,13 +90,17 @@ public class Main {
                 while (true) {
                     // Decelerate to center if no input for 1 second
                     long now = System.currentTimeMillis();
-                    if (now - lastInputTime > 1000) {
-                        if (x > 0) x -= 0.01;
-                        else if (x < 0) x += 0.01;
-                        if (y > 0) y -= 0.01;
-                        else if (y < 0) y += 0.01;
-                        if (rotation > 0) rotation -= 0.01;
-                        else if (rotation < 0) rotation += 0.01;
+                    if (now - lastXTime > 500) {
+                        if (x > 0) x -= 0.005;
+                        else if (x < 0) x += 0.005;
+                    }
+                    if (now - lastYTime > 500) {
+                        if (y > 0) y -= 0.005;
+                        else if (y < 0) y += 0.005;
+                    }
+                    if (now - lastRotationTime > 500) {
+                        if (rotation > 0) rotation -= 0.005;
+                        else if (rotation < 0) rotation += 0.005;
                     }
                     double[] powers = controller.update(x, y, rotation);
                     SwingUtilities.invokeLater(() -> {
