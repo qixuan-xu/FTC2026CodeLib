@@ -1,2 +1,2 @@
-# FTC2026Code
-Code for 2026-2027 season FTC
+# FTC2026CodeLib
+Code library for FTC
