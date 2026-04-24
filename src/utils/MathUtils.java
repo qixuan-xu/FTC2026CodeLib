@@ -52,4 +52,24 @@ public class MathUtils {
         );
         return max > 1.0 ? max : 1.0;
     }
+
+
+    // Normalize the angle to the range [-180, 180). This method takes an angle in degrees and
+    // normalizes it to ensure that it falls within the specified range. It does this by first
+    // taking the modulus of the angle with 360 to wrap it around, and then adjusting it if it
+    // exceeds 180 or is less than or equal to -180. This is useful for ensuring that angles are
+    // represented in a consistent way, especially when dealing with rotations in robotics or
+    // other applications where angles can wrap around.
+    public static double normalizeAngle(double angle) {
+          angle = angle % 360;
+          if (angle > 180) angle -= 360;
+          if (angle <= -180) angle += 360;
+          return angle;
+    }
+
+    // Calculates the distance between two points (x1, y1) and (x2, y2) using the
+    // Euclidean distance formula.
+    public static double distance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    }
 }
