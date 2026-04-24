@@ -25,22 +25,34 @@ public class Main {
                     int key = e.getKeyCode();
                     switch (key) {
                         case KeyEvent.VK_W:
-                            y = 1.0;
+                            if (x < 1.0) {
+                                x += 0.05;
+                            } // 前进加速
                             break;
                         case KeyEvent.VK_S:
-                            y = -1.0;
+                            if (x > -1.0) {
+                                x -= 0.05;
+                            } // 后退加速
                             break;
                         case KeyEvent.VK_A:
-                            x = -1.0;
+                            if (y > -1.0) {
+                                y -= 0.05;
+                            } // 左移加速
                             break;
                         case KeyEvent.VK_D:
-                            x = 1.0;
+                            if (y < 1.0) {
+                                y += 0.05;
+                            } // 右移加速
                             break;
                         case KeyEvent.VK_Q:
-                            rotation = -1.0;
+                            if (rotation > -1.0) {
+                                rotation -= 0.05;
+                            } // 左转加速
                             break;
                         case KeyEvent.VK_E:
-                            rotation = 1.0;
+                            if (rotation < 1.0) {
+                                rotation += 0.05;
+                            } // 右转加速
                             break;
                     }
                 }
@@ -74,9 +86,10 @@ public class Main {
             Thread updateThread = new Thread(() -> {
                 while (true) {
                     double[] powers = controller.update(x, y, rotation);
-                    System.out.printf("\rFront Left:  %.3f  Front Right: %.3f  Back Left:   %.3f  Back Right:  %.3f", powers[0], powers[1], powers[2], powers[3]);
+                    System.out.print("\033[H"); // Move cursor to top left
+                    System.out.printf("FL: %.3f FR: %.3f\nBL: %.3f BR: %.3f\n", powers[0], powers[1], powers[2], powers[3]);
                     try {
-                        Thread.sleep(100); // Update every 100ms
+                        Thread.sleep(500); // Update every 500ms
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         break;
