@@ -42,5 +42,8 @@ public final class Constants {
     // These are example values, adjust based on your robot
     public static final double ROBOT_LENGTH = 18.0;      // inch
     public static final double ROBOT_WIDTH = 16.5;       // inch
-}
 
+    // ========== Potentiometer ==========
+    public static final double POTENTIOMETER_MAX_DISTANCE = 24.0;    // inch (maximum extension distance)
+    public static final double POTENTIOMETER_DEFAULT_OFFSET = 0.0;   // inch (default zero offset)
+}

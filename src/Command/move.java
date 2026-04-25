@@ -1,101 +1,62 @@
 package Command;
 
 import control.TeleOpController;
-import utils.MathUtils;
-import utils.Constants;
+import sensor.Potentiometer;
+import sensor.Odometry;
 
 /**
- * Move command for FTC robot.
- * Provides two movement methods: by distance and by speed/time.
+ * FTC Robot Movement Command Factory
+ * Creates FTC SDK style commands for robot movement.
+ * Provides factory methods for different movement types.
  */
-public class move {
+public class Move {
     private TeleOpController controller;
 
-    public move(TeleOpController controller) {
+    /**
+     * Constructor for Move factory.
+     * @param controller TeleOpController for motor output
+     */
+    public Move(TeleOpController controller) {
         this.controller = controller;
     }
 
     /**
-     * Move the robot a specified distance in a given direction with optional turn.
-     * @param distance the distance to move
-     * @param speed the movement speed (0.0 to 1.0)
+     * Create a command to move the robot a specified distance using PID control with potentiometer feedback.
+     * @param potentiometer the potentiometer sensor for distance measurement
+     * @param targetDistance the target distance to move in inches (positive = forward, negative = backward)
      * @param direction the direction to move (0-360 degrees, 0=forward, 90=right, 180=backward, 270=left)
-     * @param turn the turn speed while moving (only affects yaw, doesn't affect x,y movement)
-     * @return true if movement completed successfully
+     * @param turn the turn speed while moving (-1.0 to 1.0, only affects yaw)
+     * @param timeoutMs timeout in milliseconds (0 = no timeout)
+     * @return MoveDistanceCommand instance
      */
-    public boolean MoveDistance(double distance, double speed, double direction, double turn) {
-        speed = MathUtils.clamp(speed, 0.0, 1.0);
-        turn = MathUtils.clamp(turn, -1.0, 1.0);
-
-        // Convert direction from degrees to radians
-        double directionRad = Math.toRadians(direction);
-
-        // Calculate x and y components based on direction
-        double x = Math.sin(directionRad) * speed;
-        double y = Math.cos(directionRad) * speed;
-
-        // Calculate time needed to cover distance at given speed
-        double maxSpeed = Math.sqrt(x * x + y * y);
-        double timeNeeded = maxSpeed > 0 ? distance / maxSpeed : 0;
-
-        // Execute movement for calculated time
-        long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < (long) (timeNeeded * 1000)) {
-            controller.update(x, y, turn);
-            try {
-                Thread.sleep(Constants.UPDATE_INTERVAL_MS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-        }
-
-        return true;
+    public MoveDistanceCommand moveDistance(Potentiometer potentiometer, double targetDistance,
+                                          double direction, double turn, long timeoutMs) {
+        return new MoveDistanceCommand(controller, potentiometer, targetDistance, direction, turn, timeoutMs);
     }
 
     /**
-     * Move the robot at a specified speed for a given time with optional turn.
+     * Create a command to move the robot at a specified speed for a given time with optional turn.
      * @param speed the movement speed (0.0 to 1.0)
      * @param time the time to move in seconds
      * @param direction the direction to move (0-360 degrees, 0=forward, 90=right, 180=backward, 270=left)
-     * @param turn the turn speed while moving (only affects yaw, doesn't affect x,y movement)
-     * @return true if movement completed successfully
+     * @param turn the turn speed while moving (-1.0 to 1.0, only affects yaw)
+     * @return MoveSpeedTimeCommand instance
      */
-    public boolean MoveSpeedTime(double speed, double time, double direction, double turn) {
-        speed = MathUtils.clamp(speed, 0.0, 1.0);
-        turn = MathUtils.clamp(turn, -1.0, 1.0);
-
-        // Convert direction from degrees to radians
-        double directionRad = Math.toRadians(direction);
-
-        // Calculate x and y components based on direction
-        double x = Math.sin(directionRad) * speed;
-        double y = Math.cos(directionRad) * speed;
-
-        // Execute movement for specified time
-        long startTime = System.currentTimeMillis();
-        long timeMillis = (long) (time * 1000);
-
-        while (System.currentTimeMillis() - startTime < timeMillis) {
-            controller.update(x, y, turn);
-            try {
-                Thread.sleep(Constants.UPDATE_INTERVAL_MS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-        }
-
-        // Stop movement
-        controller.update(0, 0, 0);
-
-        return true;
+    public MoveSpeedTimeCommand moveSpeedTime(double speed, double time, double direction, double turn) {
+        return new MoveSpeedTimeCommand(controller, speed, time, direction, turn);
     }
 
     /**
-     * Stop the robot immediately.
+     * Create a command to move the robot to a target position using odometry feedback.
+     * @param odometry the odometry system for position tracking
+     * @param targetX target X position in inches
+     * @param targetY target Y position in inches
+     * @param targetHeading target heading in degrees (-999 to keep current heading)
+     * @param timeoutMs timeout in milliseconds (0 = no timeout)
+     * @return MoveToPositionCommand instance
      */
-    public void stop() {
-        controller.update(0, 0, 0);
+    public MoveToPositionCommand moveToPosition(Odometry odometry, double targetX, double targetY,
+                                              double targetHeading, long timeoutMs) {
+        return new MoveToPositionCommand(controller, odometry, targetX, targetY, targetHeading, timeoutMs);
     }
 }
