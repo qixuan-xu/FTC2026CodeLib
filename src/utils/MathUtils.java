@@ -5,6 +5,9 @@ public class MathUtils {
     // than the minimum, it returns the minimum. If the value is greater than
     // the maximum, it returns the maximum. Otherwise, it returns the original value.
     public static double clamp(double value, double min, double max) {
+        if (min > max) {
+            throw new IllegalArgumentException("min cannot be greater than max");
+        }
         return Math.max(min, Math.min(max, value));
     }
 
@@ -12,6 +15,9 @@ public class MathUtils {
     // is greater than the specified maximum, it returns the maximum with the same sign
     // as the input. Otherwise, it returns the original value.
     public static double clampAbs(double value, double max) {
+        if (max < 0) {
+            throw new IllegalArgumentException("max must be positive");
+        }
         return Math.max(-max, Math.min(max, value));
     }
 
@@ -19,7 +25,9 @@ public class MathUtils {
     // is less than or equal to the threshold, it returns 0. Otherwise, it returns
     // the original value.
     public static double deadzone(double value, double threshold) {
-        return Math.abs(value) > threshold ? value : 0.0;
+        if (Math.abs(value) < threshold) return 0.0;
+        double sign = Math.signum(value);
+        return sign * (Math.abs(value) - threshold) / (1 - threshold);
     }
 
     // Checks if two double values are approximately equal within a specified epsilon.
