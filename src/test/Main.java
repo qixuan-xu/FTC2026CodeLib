@@ -1,6 +1,7 @@
 package test;
 // A simple test class to demonstrate the TeleOpController functionality with real-time keyboard input simulation.
 import control.TeleOpController;
+import utils.Constants;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JFrame;
@@ -8,7 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 public class Main {
-    private static TeleOpController controller = new TeleOpController(0.05, 3);
+    private static TeleOpController controller = new TeleOpController(Constants.DEADZONE, Constants.CURVE_POWER);
     private static volatile double x = 0.0;
     private static volatile double y = 0.0;
     private static volatile double rotation = 0.0;

@@ -3,6 +3,7 @@ package control;
 // This class allows you to create a PID controller
 
 import utils.MathUtils;
+import utils.Constants;
 
 /**
  * A simple PID (Proportional-Integral-Derivative) controller implementation.
@@ -37,11 +38,18 @@ public class PID {
         this.integral = 0.0;
         this.lastError = 0.0;
 
-        this.minOutput = -1.0;
-        this.maxOutput = 1.0;
+        this.minOutput = Constants.PID_MIN_OUTPUT;
+        this.maxOutput = Constants.PID_MAX_OUTPUT;
 
-        this.minIntegral = -1.0;
-        this.maxIntegral = 1.0;
+        this.minIntegral = Constants.PID_MIN_INTEGRAL;
+        this.maxIntegral = Constants.PID_MAX_INTEGRAL;
+    }
+
+    /**
+     * Constructs a PID controller with the default coefficients from Constants.
+     */
+    public PID() {
+        this(Constants.DRIVE_KP, Constants.DRIVE_KI, Constants.DRIVE_KD);
     }
 
     /**
