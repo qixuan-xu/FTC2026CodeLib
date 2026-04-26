@@ -3,8 +3,37 @@ package sensor;
 import utils.Constants;
 
 /**
- * Odometry system using three potentiometers for FTC robot positioning.
- * Two parallel potentiometers (left/right) and one perpendicular (horizontal/back).
+ * Three-Wheel Odometry System (三轮里程计)
+ *
+ * Tracks robot position and heading using three potentiometers:
+ * - Two parallel wheels (left and right) for X position and rotation
+ * - One perpendicular wheel (back) for Y position
+ *
+ * How it works:
+ * 1. Each potentiometer measures distance traveled by its wheel
+ * 2. Differences between wheel positions calculate heading changes
+ * 3. Robot position calculated from heading + distance
+ * 4. All calculations use Constants.TRACK_WIDTH for accuracy
+ *
+ * Coordinate system:
+ * - X-axis: Forward/Backward (0° = forward)
+ * - Y-axis: Left/Right (90° = right)
+ * - Heading: Robot rotation (radians, 0° = forward)
+ *
+ * Position units: inches
+ * Heading units: radians (convertible to degrees via getHeadingDegrees())
+ *
+ * Usage:
+ *   Potentiometer left = new Potentiometer();
+ *   Potentiometer right = new Potentiometer();
+ *   Potentiometer back = new Potentiometer();
+ *   Odometry odometry = new Odometry(left, right, back);
+ *
+ *   // In OpMode loop:
+ *   odometry.updatePosition(); // Call every loop
+ *   double x = odometry.getX();
+ *   double y = odometry.getY();
+ *   double heading = odometry.getHeadingDegrees();
  */
 public class Odometry {
     private Potentiometer leftWheel;
@@ -49,7 +78,23 @@ public class Odometry {
 
     /**
      * Update the robot position based on potentiometer readings.
-     * Call this method regularly to track position.
+     * MUST call this every control loop for accurate position tracking (typically every 10-50ms).
+     *
+     * Algorithm:
+     * 1. Read current potentiometer distances
+     * 2. Calculate delta (change) for each wheel
+     * 3. Calculate heading change from parallel wheel difference
+     * 4. Apply rotation to movement vector
+     * 5. Update global position and heading
+     *
+     * Math (三轮里程计数学):
+     * - deltaHeading = (deltaRight - deltaLeft) / TRACK_WIDTH
+     * - Movement rotated by current heading for accurate position
+     *
+     * Precision note:
+     * - Position accuracy depends on potentiometer calibration
+     * - Call frequently for best results
+     * - Consider resetting position after major recalibration
      */
     public void updatePosition() {
         double leftPos = leftWheel.getDistance();

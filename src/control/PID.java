@@ -6,9 +6,54 @@ import utils.MathUtils;
 import utils.Constants;
 
 /**
- * A simple PID (Proportional-Integral-Derivative) controller implementation.
- * This controller calculates an output based on the difference between a target and current value,
- * using proportional, integral, and derivative terms to minimize error over time.
+ * PID (Proportional-Integral-Derivative) Controller Implementation
+ *
+ * Closed-loop control system for precise robot movement and stabilization.
+ * Continuously adjusts motor power to reach and maintain target values.
+ *
+ * Three Terms:
+ * 1. Proportional (P): Responds proportionally to current error
+ *    - output += kP * error
+ *    - Larger kP = faster response, but may cause oscillation
+ *
+ * 2. Integral (I): Corrects accumulated error over time
+ *    - output += kI * integral(error)
+ *    - Eliminates steady-state error, but can cause overshoot
+ *
+ * 3. Derivative (D): Responds to rate of error change
+ *    - output += kD * (error - lastError)
+ *    - Dampens oscillation and improves stability
+ *
+ * Formula (each update):
+ *   error = target - current
+ *   integral = integral + error * dt
+ *   derivative = (error - lastError) / dt
+ *   output = (kP * error) + (kI * integral) + (kD * derivative)
+ *
+ * Tuning Guide:
+ * - Start with kP only, increase until oscillation appears
+ * - Add kD to reduce oscillation
+ * - Add kI if controller doesn't reach target
+ * - Typical range: kP=[0.1-1.0], kI=[0.0-0.1], kD=[0.01-0.5]
+ *
+ * Default values from Constants.java:
+ *   DRIVE_KP = 0.8
+ *   DRIVE_KI = 0.0
+ *   DRIVE_KD = 0.1
+ *
+ * Usage:
+ *   PID pidController = new PID(); // Uses Constants defaults
+ *
+ *   while (moving) {
+ *       double dt = (currentTime - lastTime) / 1000.0;
+ *       double output = pidController.update(targetValue, currentValue, dt);
+ *       motor.setPower(output);
+ *   }
+ *
+ * Safety Features:
+ * - Output clamping: Prevents motor commands from exceeding [-1.0, 1.0]
+ * - Integral windup prevention: Limits accumulated integral
+ * - Supports reset() for state clearing
  */
 public class PID {
     private double kP;
