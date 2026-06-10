@@ -1,6 +1,7 @@
 package sensor;
 
 import utils.Constants;
+import utils.MathUtils;
 
 /**
  * Three-Wheel Odometry System (三轮里程计)
@@ -109,31 +110,30 @@ public class Odometry {
         // Calculate heading change (average of parallel wheels)
         double deltaHeading = (deltaRight - deltaLeft) / Constants.TRACK_WIDTH;
 
-        // Calculate local movement
-        double deltaXLocal = deltaBack;
-        double deltaYLocal = (deltaLeft + deltaRight) / 2.0;
+        // Calculate local movement. X is forward/backward, Y is strafe.
+        double deltaForwardLocal = (deltaLeft + deltaRight) / 2.0;
+        double deltaStrafeLocal = deltaBack - Constants.LATERAL_OFFSET * deltaHeading;
 
         // If heading changed, rotate the local movement
         if (Math.abs(deltaHeading) > 0.001) {
             double cos = Math.cos(currentHeading + deltaHeading / 2.0);
             double sin = Math.sin(currentHeading + deltaHeading / 2.0);
 
-            double deltaXGlobal = deltaXLocal * cos - deltaYLocal * sin;
-            double deltaYGlobal = deltaXLocal * sin + deltaYLocal * cos;
+            double deltaXGlobal = deltaForwardLocal * cos - deltaStrafeLocal * sin;
+            double deltaYGlobal = deltaForwardLocal * sin + deltaStrafeLocal * cos;
 
             currentX += deltaXGlobal;
             currentY += deltaYGlobal;
         } else {
             // No heading change, simple addition
-            currentX += deltaXLocal * Math.cos(currentHeading) - deltaYLocal * Math.sin(currentHeading);
-            currentY += deltaXLocal * Math.sin(currentHeading) + deltaYLocal * Math.cos(currentHeading);
+            currentX += deltaForwardLocal * Math.cos(currentHeading) - deltaStrafeLocal * Math.sin(currentHeading);
+            currentY += deltaForwardLocal * Math.sin(currentHeading) + deltaStrafeLocal * Math.cos(currentHeading);
         }
 
         currentHeading += deltaHeading;
 
         // Normalize heading to -π to π
-        while (currentHeading > Math.PI) currentHeading -= 2 * Math.PI;
-        while (currentHeading < -Math.PI) currentHeading += 2 * Math.PI;
+        currentHeading = Math.toRadians(MathUtils.normalizeAngle(Math.toDegrees(currentHeading)));
 
         // Update previous positions
         prevLeftPos = leftPos;
@@ -195,6 +195,10 @@ public class Odometry {
     public void setPosition(double x, double y, double heading) {
         currentX = x;
         currentY = y;
-        currentHeading = heading;
+        currentHeading = Math.toRadians(MathUtils.normalizeAngle(Math.toDegrees(heading)));
+
+        prevLeftPos = leftWheel.getDistance();
+        prevRightPos = rightWheel.getDistance();
+        prevBackPos = backWheel.getDistance();
     }
 }

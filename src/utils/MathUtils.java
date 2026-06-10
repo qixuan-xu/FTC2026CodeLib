@@ -25,7 +25,10 @@ public class MathUtils {
     // is less than or equal to the threshold, it returns 0. Otherwise, it returns
     // the original value.
     public static double deadzone(double value, double threshold) {
-        if (Math.abs(value) < threshold) return 0.0;
+        if (threshold < 0.0 || threshold >= 1.0) {
+            throw new IllegalArgumentException("threshold must be in [0.0, 1.0)");
+        }
+        if (Math.abs(value) <= threshold) return 0.0;
         double sign = Math.signum(value);
         return sign * (Math.abs(value) - threshold) / (1 - threshold);
     }

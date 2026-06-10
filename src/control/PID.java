@@ -107,10 +107,12 @@ public class PID {
     public double update(double target, double current, double dt) {
         double error = target - current;
 
-        integral += error * dt;
-        integral = MathUtils.clamp(integral, minIntegral, maxIntegral);
-
-        double derivative = (error - lastError) / dt;
+        double derivative = 0.0;
+        if (dt > 0.0) {
+            integral += error * dt;
+            integral = MathUtils.clamp(integral, minIntegral, maxIntegral);
+            derivative = (error - lastError) / dt;
+        }
         lastError = error;
 
         double output = (kP * error) + (kI * integral) + (kD * derivative);
