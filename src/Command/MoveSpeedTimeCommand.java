@@ -54,10 +54,10 @@ public class MoveSpeedTimeCommand implements Command {
 
         // Calculate x and y components based on direction
         double directionRad = Math.toRadians(direction);
-        double x = Math.sin(directionRad) * speed;
-        double y = Math.cos(directionRad) * speed;
+        double forward = Math.cos(directionRad) * speed;
+        double strafe = Math.sin(directionRad) * speed;
 
-        controller.update(x, y, turn);
+        controller.update(forward, strafe, turn);
     }
 
     @Override

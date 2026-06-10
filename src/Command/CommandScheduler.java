@@ -1,5 +1,7 @@
 package Command;
 
+import java.util.Objects;
+
 /**
  * FTC SDK Style Command Scheduler
  *
@@ -41,6 +43,8 @@ public class CommandScheduler {
      * @param command the command to schedule (cannot be null)
      */
     public void schedule(Command command) {
+        Objects.requireNonNull(command, "command cannot be null");
+
         if (commandRunning) {
             // Interrupt current command
             if (currentCommand != null) {

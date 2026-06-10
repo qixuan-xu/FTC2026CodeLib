@@ -76,11 +76,7 @@ public class MoveToPositionCommand implements Command {
         // Calculate errors
         double errorX = targetX - currentX;
         double errorY = targetY - currentY;
-        double errorHeading = (targetHeading != -999) ? targetHeading - currentHeading : 0;
-
-        // Normalize heading error to -180 to 180
-        while (errorHeading > 180) errorHeading -= 360;
-        while (errorHeading < -180) errorHeading += 360;
+        double errorHeading = (targetHeading != -999) ? MathUtils.normalizeAngle(targetHeading - currentHeading) : 0;
 
         // Check if close enough to target
         if (Math.abs(errorX) < 0.5 && Math.abs(errorY) < 0.5 && Math.abs(errorHeading) < 2.0) {
@@ -92,7 +88,7 @@ public class MoveToPositionCommand implements Command {
         double dt = 0.02; // Assume 20ms loop time for FTC
         double speedX = pidX.update(targetX, currentX, dt);
         double speedY = pidY.update(targetY, currentY, dt);
-        double turn = pidHeading.update(targetHeading != -999 ? targetHeading : currentHeading, currentHeading, dt);
+        double turn = (targetHeading != -999) ? pidHeading.update(errorHeading, 0.0, dt) : 0.0;
 
         // Clamp values
         speedX = MathUtils.clamp(speedX, -1.0, 1.0);

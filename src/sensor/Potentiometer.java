@@ -65,7 +65,7 @@ public class Potentiometer {
      * Calibrate the potentiometer to current position as zero.
      */
     public void calibrateZero() {
-        this.offset = -getDistance();
+        this.offset = -currentPosition * maxDistance;
     }
 
     /**
